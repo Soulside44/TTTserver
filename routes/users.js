@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var mongodb = require('mongodb');
+var crypto = require('crypto');
 //회원가입
 router.post('/signup', function(req, res, next){
   var body = req.body;
@@ -20,6 +21,7 @@ router.post('/signup', function(req, res, next){
   {
     res.json({message:'400 Bad Request'});
   }
+
   var users = database.collection("users");
   //유저네임이 존재 하는지 미리 확인해야함, 존재 하지 않아야만 자료를 넣을 수 있다. 
   users.count({ 'username': username }, function (err, result) {
@@ -29,12 +31,18 @@ router.post('/signup', function(req, res, next){
       return;
     }
     else {
-      users.insertOne({ "username": username, "password": password, "email": email, "name": name }, function (err, result) {
-        if (err) throw err;
-        if (result.ops.length > 0)
-          res.json(result.ops[0]);
-        else
-          res.json({ message: "503 Server error" });
+      crypto.randomBytes(64, function (err, buf) {
+        const saltStr = buf.toString('base64');
+        crypto.pbkdf2(password, saltStr, 100, 64, 'sha512', function (err, key) {
+          const cryptoPassword = key.toString('base64');
+          users.insertOne({ "username": username, "password": cryptoPassword, "email": email, "name": name, "salt":saltStr}, function (err, result) {
+            if (err) throw err;
+            if (result.ops.length > 0)
+              res.json(result.ops[0]);
+            else
+              res.json({ message: "503 Server error" });
+          });
+        });
       });
     }
   });
