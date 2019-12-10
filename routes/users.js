@@ -48,11 +48,12 @@ router.post('/signin', function(req, res, next){
  var database = req.app.get("database");
  var users = database.collection("users");
 
- users.findOne({"username": username, "password": password},{projection: {_id:0, email:1}}, function(err, user){
+ users.findOne({"username": username, "password": password},{projection: {_id:1, email:1, name:1}}, function(err, user){
 
   if(err) res.status(500).json({error:err});
   else if(user==null) res.send("아이디와 비밀번호를 확인하세요.");
-  else res.send("환영합니다. "+ username +"님"); //res.json(user);
+  else res.json(user);
+  //res.send("환영합니다. "+ username +"님" + user); //
 
  });
 });
