@@ -14,7 +14,7 @@ Body
 {
   'username':'yourID',
   'password':'yourPassword',
-  'name':'yourname'
+  'name':'yourName'
   'email':'yourEmail'
 }
 </pre>
